@@ -1,14 +1,30 @@
-# Imagen base
-FROM eclipse-temurin:17-jdk-alpine
+# =========================
+# BUILD STAGE
+# =========================
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Directorio de trabajo
 WORKDIR /app
 
-# Copiar el jar
-COPY target/*.jar app.jar
+# Copiar pom y descargar deps
+COPY pom.xml .
+RUN mvn -B dependency:go-offline
 
-# Exponer puerto (Render usa PORT dinámico)
+# Copiar código
+COPY src ./src
+
+# Construir jar
+RUN mvn -B package -DskipTests
+
+# =========================
+# RUNTIME STAGE
+# =========================
+FROM eclipse-temurin:17-jdk-alpine
+
+WORKDIR /app
+
+# Copiar jar del stage build
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-# Ejecutar la app
 ENTRYPOINT ["java","-jar","/app/app.jar"]
