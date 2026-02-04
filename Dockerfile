@@ -23,7 +23,7 @@ FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
 # Copiar jar del stage build
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/*-boot.jar app.jar
 
 EXPOSE 8080
 
